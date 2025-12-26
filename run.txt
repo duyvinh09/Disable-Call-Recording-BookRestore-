@@ -1,0 +1,90 @@
+@echo off
+chcp 65001 > nul
+title iOS 26 Call Recording Silencer Setup
+
+REM --- Check for Admin Rights ---
+openfiles >nul 2>&1
+if not %errorlevel%==0 (
+    echo [*] Admin rights required. Restarting as Administrator...
+    powershell -Command "Start-Process '%~f0' -Verb RunAs"
+    exit /b
+)
+REM Move to script directory to prevent path issues
+cd /d "%~dp0"
+REM ------------------------------------
+
+echo ========================================================
+echo  iOS 26 Call Recording Silencer Auto-Setup
+echo  Target Script: main.py
+echo ========================================================
+echo.
+
+REM Check Python installation
+python --version > nul 2>&1
+if errorlevel 1 (
+    echo [ERROR] Python is not installed.
+    echo Please install Python 3.11 or higher.
+    echo https://www.python.org/downloads/
+    pause
+    exit /b 1
+)
+
+echo [OK] Python found.
+echo.
+
+REM Create virtual environment (first time only)
+if not exist "venv" (
+    echo [*] Creating virtual environment...
+    python -m venv venv
+    if errorlevel 1 (
+        echo [ERROR] Failed to create virtual environment.
+        pause
+        exit /b 1
+    )
+    echo [OK] Virtual environment created.
+)
+
+REM Activate virtual environment
+call venv\Scripts\activate.bat
+
+REM Install dependencies
+echo.
+echo [*] Installing required libraries...
+echo.
+
+pip install --upgrade pip > nul 2>&1
+
+REM Install pymobiledevice3 and dependencies
+pip install pymobiledevice3 colorama > nul 2>&1
+if errorlevel 1 (
+    echo [ERROR] Failed to install pymobiledevice3.
+    pause
+    exit /b 1
+)
+
+echo.
+echo [OK] Libraries installed successfully.
+echo.
+
+echo.
+echo ========================================================
+echo  [IMPORTANT] PRE-FLIGHT CHECK
+echo ========================================================
+echo  1. Are iPhone and PC on the SAME Wi-Fi network?
+echo  2. Is VPN / Proxy turned OFF? (Crucial!)
+echo  3. Is iPhone unlocked and in Developer Mode?
+echo ========================================================
+echo.
+echo Press any key to start the exploit...
+pause > nul
+
+REM Start application
+echo =====================================
+echo    Starting application...
+echo =====================================
+echo.
+python main.py
+
+echo.
+echo Press any key to exit...
+pause > nul
